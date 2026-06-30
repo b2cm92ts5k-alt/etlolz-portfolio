@@ -2,102 +2,113 @@
 import type { Project } from '../data/projects';
 import { CATEGORY_META, STATUS_META } from '../data/projects';
 
-interface Props {
-  project: Project;
-}
-
+interface Props { project: Project }
 const { project } = Astro.props;
-const cat = CATEGORY_META[project.category];
+const cat    = CATEGORY_META[project.category];
 const status = STATUS_META[project.status];
 
-const borderColorMap: Record<string, string> = {
-  'neon-cyan': 'neon-border-cyan',
-  'neon-orange': 'neon-border-orange',
-  'neon-green': 'neon-border-green',
-  'neon-purple': 'neon-border-purple',
-};
-const borderClass = borderColorMap[cat.tailwindColor] ?? 'neon-border-cyan';
+const hasVideo = project.videoId && project.videoId.length > 0;
+const hasImage = project.coverImage && project.coverImage.length > 0;
+const hasMedia = hasVideo || hasImage;
 ---
 
-<article class={`card-cyber p-5 flex flex-col gap-4 border ${borderClass} group`}>
-  <!-- Header -->
-  <div class="flex items-start justify-between gap-3">
-    <div class="flex-1 min-w-0">
-      <div class="flex items-center gap-2 mb-1">
-        <!-- Category badge -->
-        <span
-          class="text-xs font-mono px-2 py-0.5 rounded-sm uppercase tracking-wider font-medium border"
-          style={`color: ${cat.color}; border-color: ${cat.color}40; background: ${cat.color}10;`}
-        >
-          {cat.label}
-        </span>
-        <!-- Status dot -->
-        <span
-          class="flex items-center gap-1 text-xs font-mono"
-          style={`color: ${status.color};`}
-        >
-          <span class="w-1.5 h-1.5 rounded-full inline-block" style={`background: ${status.color};`}></span>
-          {status.label}
-        </span>
-      </div>
-      <h3 class="font-display font-bold text-base text-white leading-tight">
-        {project.title}
-        {project.subtitle && (
-          <span class="text-white/40 font-mono text-sm font-normal ml-2">— {project.subtitle}</span>
-        )}
-      </h3>
+<article class={`card-cyber flex flex-col border ${cat.borderClass} group overflow-hidden`}>
+
+  <!-- ── Media: thumbnail or gradient placeholder ── -->
+  {hasMedia ? (
+    <div class="video-thumb aspect-video bg-dark-700 flex-shrink-0">
+      <img
+        src={hasVideo
+          ? `https://img.youtube.com/vi/${project.videoId}/hqdefault.jpg`
+          : `/images/projects/${project.coverImage}`}
+        alt={project.title}
+        class="w-full h-full object-cover opacity-85"
+        loading="lazy"
+      />
+      {hasVideo && (
+        <div class="play-btn">
+          <div class="play-icon">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="white">
+              <path d="M4 2l10 6-10 6V2z"/>
+            </svg>
+          </div>
+        </div>
+      )}
     </div>
-  </div>
+  ) : (
+    <div class="aspect-video flex-shrink-0 flex items-center justify-center"
+         style={`background: linear-gradient(135deg, ${cat.color}0a 0%, transparent 60%); border-bottom: 1px solid ${cat.color}20;`}>
+      <span class="font-display font-black text-4xl opacity-10" style={`color: ${cat.color};`}>
+        {project.title.slice(0, 2).toUpperCase()}
+      </span>
+    </div>
+  )}
 
-  <!-- Tagline -->
-  <p class="text-sm font-mono" style={`color: ${cat.color}99;`}>
-    {project.tagline}
-  </p>
+  <!-- ── Content ── -->
+  <div class="p-5 flex flex-col gap-3 flex-1">
+    <!-- Badges -->
+    <div class="flex items-center gap-2 flex-wrap">
+      <span class="text-xs font-mono px-2 py-0.5 rounded-sm uppercase tracking-wider border"
+            style={`color:${cat.color}; border-color:${cat.color}35; background:${cat.color}0d;`}>
+        {cat.label}
+      </span>
+      <span class="flex items-center gap-1 text-xs font-mono" style={`color:${status.color};`}>
+        <span class="w-1.5 h-1.5 rounded-full" style={`background:${status.color};`}></span>
+        {status.label}
+      </span>
+    </div>
 
-  <!-- Description -->
-  <p class="text-sm text-white/50 leading-relaxed flex-1">
-    {project.description}
-  </p>
+    <!-- Title -->
+    <h3 class="font-display font-bold text-base text-white leading-snug">
+      {project.title}
+      {project.subtitle && (
+        <span class="text-white/35 font-mono font-normal text-sm ml-2">— {project.subtitle}</span>
+      )}
+    </h3>
 
-  <!-- Tags -->
-  <div class="flex flex-wrap gap-1.5">
-    {project.tags.map((tag) => (
-      <span class="tag">{tag}</span>
-    ))}
-  </div>
+    <!-- Tagline -->
+    <p class="text-xs font-mono" style={`color:${cat.color}aa;`}>{project.tagline}</p>
 
-  <!-- Links -->
-  <div class="flex flex-wrap gap-2 pt-1 border-t border-white/5">
-    {project.links.play && (
-      <a href={project.links.play} target="_blank" rel="noopener"
-        class="btn-neon text-xs px-3 py-1.5 border font-mono rounded transition-all duration-200"
-        style={`color: ${cat.color}; border-color: ${cat.color}40; background: ${cat.color}08;`}
-        onmouseover={`this.style.borderColor='${cat.color}'; this.style.boxShadow='0 0 12px ${cat.color}50';`}
-        onmouseout={`this.style.borderColor='${cat.color}40'; this.style.boxShadow='none';`}
-      >
-        ▶ Play Now
-      </a>
-    )}
-    {project.links.github && (
-      <a href={project.links.github} target="_blank" rel="noopener"
-        class="btn-neon text-xs px-3 py-1.5 border border-white/15 text-white/50 font-mono rounded transition-all duration-200 hover:border-white/40 hover:text-white"
-      >
-        ↗ GitHub
-      </a>
-    )}
-    {project.links.youtube && (
-      <a href={project.links.youtube} target="_blank" rel="noopener"
-        class="btn-neon text-xs px-3 py-1.5 border border-white/15 text-white/50 font-mono rounded transition-all duration-200 hover:border-red-400/60 hover:text-red-400"
-      >
-        ▶ YouTube
-      </a>
-    )}
-    {project.links.steam && (
-      <a href={project.links.steam} target="_blank" rel="noopener"
-        class="btn-neon text-xs px-3 py-1.5 border border-white/15 text-white/50 font-mono rounded transition-all duration-200 hover:border-blue-400/60 hover:text-blue-400"
-      >
-        Steam
-      </a>
-    )}
+    <!-- Description -->
+    <p class="text-sm text-white/45 leading-relaxed flex-1">{project.description}</p>
+
+    <!-- Tags -->
+    <div class="flex flex-wrap gap-1.5">
+      {project.tags.map((tag) => <span class="tag">{tag}</span>)}
+    </div>
+
+    <!-- Links -->
+    <div class="flex flex-wrap gap-2 pt-2 border-t border-white/5">
+      {project.links.play && (
+        <a href={project.links.play} target="_blank" rel="noopener"
+           class="btn-neon text-xs px-3 py-1.5 border rounded font-mono transition-all duration-200"
+           style={`color:${cat.color}; border-color:${cat.color}35; background:${cat.color}0a;`}
+           onmouseover={`this.style.borderColor='${cat.color}'; this.style.boxShadow='0 0 12px ${cat.color}45';`}
+           onmouseout={`this.style.borderColor='${cat.color}35'; this.style.boxShadow='none';`}>
+          ▶ Play Now
+        </a>
+      )}
+      {project.links.demo && (
+        <a href={project.links.demo} target="_blank" rel="noopener"
+           class="btn-neon text-xs px-3 py-1.5 border rounded font-mono transition-all duration-200"
+           style={`color:${cat.color}; border-color:${cat.color}35; background:${cat.color}0a;`}
+           onmouseover={`this.style.borderColor='${cat.color}'; this.style.boxShadow='0 0 12px ${cat.color}45';`}
+           onmouseout={`this.style.borderColor='${cat.color}35'; this.style.boxShadow='none';`}>
+          ↗ Live Site
+        </a>
+      )}
+      {project.links.github && (
+        <a href={project.links.github} target="_blank" rel="noopener"
+           class="btn-neon text-xs px-3 py-1.5 border border-white/12 text-white/45 rounded font-mono transition-all duration-200 hover:border-white/35 hover:text-white/80">
+          ↗ GitHub
+        </a>
+      )}
+      {project.links.youtube && (
+        <a href={project.links.youtube} target="_blank" rel="noopener"
+           class="btn-neon text-xs px-3 py-1.5 border border-white/12 text-white/45 rounded font-mono transition-all duration-200 hover:border-red-500/50 hover:text-red-400">
+          ▶ Video
+        </a>
+      )}
+    </div>
   </div>
 </article>
