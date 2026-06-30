@@ -43,9 +43,9 @@ export const projects: Project[] = [
     tags: ['Multi-Agent', 'Local AI', 'MCP', 'Claude', 'Ollama', 'OpenRouter'],
     links: {
       github: 'https://github.com/b2cm92ts5k-alt/et-office-desktop',
-      youtube: 'https://www.youtube.com/watch?v=INSERT_VIDEO_ID', // ← ใส่ Video ID ที่นี่
+      youtube: 'https://www.youtube.com/watch?v=jksr4jYUAF8',
     },
-    videoId: '', // ← ใส่ YouTube Video ID เช่น 'dQw4w9WgXcQ'
+    videoId: 'jksr4jYUAF8', // ← ใส่ YouTube Video ID เช่น 'dQw4w9WgXcQ'
     featured: true,
   },
   {
